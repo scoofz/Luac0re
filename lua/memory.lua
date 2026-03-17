@@ -146,3 +146,29 @@ function read_null_terminated_string(addr)
     end
 end
 
+function patch_malloc()
+    
+    -- Make malloc to map memory automatically when memory is low
+    write32(LIBC_OFFSETS.malloc_heap_override_enabled, 0) -- disable fixed override
+    write64(LIBC_OFFSETS.malloc_heap_size_limit, -1)      -- unlimited
+    write8(LIBC_OFFSETS.malloc_heap_page_align, 1)        -- must be 1 for 64KB alignment
+    write64(LIBC_OFFSETS.malloc_heap_premapped_base, 0)   -- force mmap path
+    
+    -- Groom libc heap
+    local buffers = {}
+    for i = 1, 10 do
+        buffers[i] = malloc(0x4000000)
+    end
+    for i = 1, 10 do
+        free(buffers[i])
+    end
+    for i = 1, 10 do
+        buffers[i] = malloc(0x6000000)
+    end
+    for i = 1, 10 do
+        free(buffers[i])
+    end
+    
+    send_notification("malloc patched")
+    
+end

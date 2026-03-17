@@ -10,15 +10,16 @@ require "syscall"
 require "remotelualoader"
 require "jit"
 
-version_string = "Luac0re 2.0b by Gezine"
+version_string = "Luac0re 2.1 by Gezine"
 
 init_native_functions()
+patch_malloc()
 syscall.init()
 
+sceKernelRemoveExceptionHandler(11)
 FW_VERSION = get_fwversion()
 send_notification(version_string .. "\nPLATFORM : " ..  PLATFORM .. "\nFW : " .. FW_VERSION)
 
-sceKernelRemoveExceptionHandler(11)
 local status, errmsg = jit_init()
 if not status then
     show_dialog("JIT exploit failed\n" .. errmsg)

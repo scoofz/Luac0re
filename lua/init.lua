@@ -62,5 +62,5 @@ if not status then
     error(err) -- Throw error to masticore
 end
 
--- DO NOT RETURN TO MASTICORE WHEN JIT HACK IS ENABLED
+-- DO NOT RETURN TO MASTICORE WHEN JIT EXPLOIT IS ENABLED
 while true do end

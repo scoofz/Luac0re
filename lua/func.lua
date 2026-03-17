@@ -168,6 +168,7 @@ end
 
 function init_native_functions()
     calloc                                = func_wrap(read64(EBOOT_OFFSETS.calloc))
+    free                                  = func_wrap(read64(EBOOT_OFFSETS.free))
     sceKernelOpen                         = func_wrap(read64(EBOOT_OFFSETS.sceKernelOpen))
     sceKernelWrite                        = func_wrap(read64(EBOOT_OFFSETS.sceKernelWrite))
     sceKernelClose                        = func_wrap(read64(EBOOT_OFFSETS.sceKernelClose))
