@@ -188,4 +188,7 @@ function init_native_functions()
     libc_strerror                         = func_wrap(LIBC_OFFSETS.libc_strerror)
     libc_error                            = func_wrap(read64(LIBC_OFFSETS.libc_error))
     
+    memcpy                                = func_wrap(read64(EBOOT_OFFSETS.memcpy))
+    memset                                = func_wrap(read64(EBOOT_OFFSETS.memset))
+    
 end

@@ -101,36 +101,15 @@ function read_buffer(addr, size)
     local str = string.rep("\0", size)
     local str_data_addr = addrof(str) + 0x20
     
-    local qwords = size // 8
-    for i = 0, qwords - 1 do
-        local val = read64(addr + i * 8)
-        write64(str_data_addr + i * 8, val)
-    end
-    
-    local remaining = size % 8
-    for i = 0, remaining - 1 do
-        local byte_val = read8(addr + qwords * 8 + i)
-        write8(str_data_addr + qwords * 8 + i, byte_val)
-    end
+    memcpy(str_data_addr, addr, size)
     
     return str
 end
 
 function write_buffer(dest, buffer)
     local buffer_addr = addrof(buffer) + 0x20
-    local size = #buffer
     
-    local qwords = size // 8
-    for i = 0, qwords - 1 do
-        local val = read64(buffer_addr + i * 8)
-        write64(dest + i * 8, val)
-    end
-    
-    local remaining = size % 8
-    for i = 0, remaining - 1 do
-        local byte_val = read8(buffer_addr + qwords * 8 + i)
-        write8(dest + qwords * 8 + i, byte_val)
-    end
+    memcpy(dest, buffer_addr, #buffer)
 end
 
 function read_null_terminated_string(addr)
@@ -147,7 +126,6 @@ function read_null_terminated_string(addr)
 end
 
 function patch_malloc()
-    
     -- Make malloc to map memory automatically when memory is low
     write32(LIBC_OFFSETS.malloc_heap_override_enabled, 0) -- disable fixed override
     write64(LIBC_OFFSETS.malloc_heap_size_limit, -1)      -- unlimited
@@ -156,17 +134,13 @@ function patch_malloc()
     
     -- Groom libc heap
     local buffers = {}
-    for i = 1, 10 do
+    for i = 1, 5 do
         buffers[i] = malloc(0x4000000)
     end
-    for i = 1, 10 do
-        free(buffers[i])
-    end
-    for i = 1, 10 do
-        buffers[i] = malloc(0x6000000)
-    end
-    for i = 1, 10 do
-        free(buffers[i])
+    for i = 1, 5 do
+        if buffers[i] ~= 0 then
+            free(buffers[i])
+        end
     end
     
     send_notification("malloc patched")

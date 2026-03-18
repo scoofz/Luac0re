@@ -57,6 +57,11 @@ LIBKERNEL_BASE = 0
 PLATFORM = nil
 FW_VERSION = nil
 
+    
+THREAD_HANDLE_RUNTIME_BRIDGE = EBOOT_BASE + 0x3A1A38
+THREAD_HANDLE_IOP_SPU2       = EBOOT_BASE + 0x5BF9738
+THREAD_HANDLE_GS             = EBOOT_BASE + 0x57F89B0
+
 -- eboot scratch memory
 DIALOG_SCRATCH        = EBOOT_BASE + 0x3C00000
 LUA_PIVOT_RAX         = EBOOT_BASE + 0x2DC8A50
@@ -108,7 +113,9 @@ EBOOT_OFFSETS = {
     sceKernelJitCreateSharedMemory        = EBOOT_BASE + 0x389528,
     sceKernelJitCreateAliasOfSharedMemory = EBOOT_BASE + 0x389530,
     sceKernelJitMapSharedMemory           = EBOOT_BASE + 0x389520,
-    recv_fd                               = EBOOT_BASE + 0x728A0, 
+    recv_fd                               = EBOOT_BASE + 0x728A0,
+    memcpy                                = EBOOT_BASE + 0x3894C8,
+    memset                                = EBOOT_BASE + 0x3894D0,
 }    
 
 LIBC_OFFSETS = {

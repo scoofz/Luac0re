@@ -13,7 +13,6 @@ end
 
 function jit_init_native_functions()
 
-    
     jit_getpid_addr = jit_read64(JIT_BASE + 0x1B5160)
     jit_calloc_addr = jit_read64(JIT_BASE + 0x1B5020)
     jit_sceKernelJitCreateSharedMemory_addr = jit_read64(JIT_BASE + 0x1B52C0)
@@ -26,11 +25,16 @@ function jit_init_native_functions()
     
     jit_sceKernelGetModuleInfoFromAddr_addr = jit_read64(JIT_LIBC_BASE + 0xCBDA8)
     
+    jit_memcpy_addr = jit_read64(JIT_BASE + 0x1B53E8)
+    jit_memset_addr = jit_read64(JIT_BASE + 0x1B53F8)
+    
     jit_calloc = jit_func_wrap(jit_calloc_addr)
     jit_libc_error = jit_func_wrap(jit_libc_error_addr)
     jit_sceKernelGetModuleInfoFromAddr = jit_func_wrap(jit_sceKernelGetModuleInfoFromAddr_addr)
     jit_sceKernelJitCreateSharedMemory = jit_func_wrap(jit_sceKernelJitCreateSharedMemory_addr)
     jit_sceKernelJitCreateAliasOfSharedMemory = jit_func_wrap(jit_sceKernelJitCreateAliasOfSharedMemory_addr)
     jit_sceKernelJitMapSharedMemory = jit_func_wrap(jit_sceKernelJitMapSharedMemory_addr)
+    jit_memcpy = jit_func_wrap(jit_memcpy_addr)
+    jit_memset = jit_func_wrap(jit_memset_addr)
 
 end

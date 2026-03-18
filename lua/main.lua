@@ -10,11 +10,15 @@ require "syscall"
 require "remotelualoader"
 require "jit"
 
-version_string = "Luac0re 2.1b by Gezine"
+version_string = "Luac0re 2.1c by Gezine"
 
 init_native_functions()
 patch_malloc()
 syscall.init()
+
+-- Kill all other threads
+scePthreadCancel(read64(THREAD_HANDLE_IOP_SPU2))
+scePthreadCancel(read64(THREAD_HANDLE_GS))
 
 sceKernelRemoveExceptionHandler(11)
 FW_VERSION = get_fwversion()

