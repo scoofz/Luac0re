@@ -11,15 +11,17 @@ static u64 eboot_wrap(void* gadget, void* fn,
                       u64 a4, u64 a5, u64 a6)
 {
     __asm__ (
+        "push rbx\n\t"            // save caller's rbx; rsp -= 8
         "mov rbx, rsi\n\t"        // rbx = fn
         "mov rax, rdi\n\t"        // rax = gadget
         "mov rdi, rdx\n\t"        // a1
         "mov rsi, rcx\n\t"        // a2
         "mov rdx, r8\n\t"         // a3
         "mov rcx, r9\n\t"         // a4
-        "mov r8,  [rsp + 8]\n\t"  // a5
-        "mov r9,  [rsp + 16]\n\t" // a6
+        "mov r8,  [rsp + 16]\n\t" // a5 (was +8, now +16 due to push)
+        "mov r9,  [rsp + 24]\n\t" // a6 (was +16, now +24 due to push)
         "call rax\n\t"
+        "pop rbx\n\t"             // restore caller's rbx
         "ret"
     );
 }
