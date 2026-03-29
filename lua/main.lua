@@ -13,7 +13,7 @@ require "gpu"
 require "offsets"
 require "elf_loader"
 
-version_string = "Luac0re 2.2 by Gezine"
+version_string = "Luac0re 2.2b by Gezine"
 
 init_native_functions()
 patch_malloc()

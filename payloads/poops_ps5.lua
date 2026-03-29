@@ -145,7 +145,7 @@ local function build_rthdr(buf, target_size)
 end
 
 function poops_ps5()
-    send_notification("Luac0re poops 1.0 by egycnq")
+    send_notification("Luac0re poops 1.1 by egycnq")
 
     if not fw_offsets then
         error("Update Luac0re to at least 2.2 version")
@@ -1006,19 +1006,7 @@ function poops_ps5()
     -- escape sandbox
     kwrite64(proc_fd + OFF.FD_RDIR, rootvnode)
     kwrite64(proc_fd + OFF.FD_JDIR, rootvnode)
-
-    -- escape prison
-    if init_proc then
-        local init_ucred = kread64(init_proc + OFF.PROC_UCRED)
-        if init_ucred ~= 0 and (init_ucred >> 48) == 0xFFFF then
-            local prison0 = kread64(init_ucred + OFF.UCRED_CR_PRISON)
-            if prison0 ~= 0 and (prison0 >> 48) == 0xFFFF then
-                kwrite64(proc_ucred + OFF.UCRED_CR_PRISON, prison0)
-                ulog("[5] prison0 set")
-            end
-        end
-    end
-
+    
     local verify_uid = kread32(proc_ucred + OFF.UCRED_CR_UID)
     if verify_uid == 0 then
         ulog("[5] jailbreak ok")
@@ -1027,7 +1015,6 @@ function poops_ps5()
     end
 
     -- Export kernel primitives as globals
-
     _G.kread    = kread
     _G.kwrite   = kwrite
     _G.kread32  = kread32
@@ -1083,8 +1070,6 @@ function poops_ps5()
     kwrite64(proc_ucred + OFF.UCRED_CR_SCECAPS1,  0xFFFFFFFFFFFFFFFF)
 
     load_elfldr()
-
-    gpu.close()
     
     send_notification("Closing app...")
     kill_app()

@@ -305,7 +305,7 @@ function gpu.setup()
     _ulog = ulog or function() end
 
 
-    syscall.resolve({open=0x5, ioctl=0x36, mprotect=0x4A, nanosleep=0xF0})
+    syscall.resolve({open=0x5, ioctl=0x36, mprotect=0x4A, nanosleep=0xF0, munmap=0x49})
 
     -- resolve dmem alloc
     local a_alloc = dlsym(LIBKERNEL_HANDLE, "sceKernelAllocateMainDirectMemory")
@@ -397,6 +397,7 @@ function gpu.setup()
     if not victim_real_pa then
         send_notification("[gpu] victim pa failed"); return false
     end
+    gpu.victim_real_pa = victim_real_pa
     _ulog("[gpu] victim_pa="..to_hex(victim_real_pa))
 
     -- walk gpu page tables for victim pte
@@ -473,9 +474,21 @@ function gpu.patch_debug(ulog_fn)
     return true
 end
 
-function gpu.close()
-    if _gpu_fd >= 0 then
-        syscall.close(_gpu_fd)
-        _gpu_fd = -1
-    end
-end
+-- function gpu.close()
+    -- if gpu.victim_ptbe_va and gpu.cleared_victim_ptbe_for_ro and gpu.victim_real_pa then
+        -- local prot_ro = PROT_READ | PROT_WRITE | GPU_READ
+        -- local prot_rw = prot_ro | GPU_WRITE
+        -- syscall.mprotect(gpu.victim_va, gpu.dmem_size, prot_ro)
+        -- kw64(gpu.victim_ptbe_va, gpu.cleared_victim_ptbe_for_ro | gpu.victim_real_pa)
+        -- syscall.mprotect(gpu.victim_va, gpu.dmem_size, prot_rw)
+    -- end
+
+    -- if gpu.victim_va then syscall.munmap(gpu.victim_va, gpu.dmem_size) end
+    -- if gpu.transfer_va then syscall.munmap(gpu.transfer_va, gpu.dmem_size) end
+    -- if gpu.cmd_va then syscall.munmap(gpu.cmd_va, gpu.dmem_size) end
+
+    -- if _gpu_fd >= 0 then
+        -- syscall.close(_gpu_fd)
+        -- _gpu_fd = -1
+    -- end
+-- end

